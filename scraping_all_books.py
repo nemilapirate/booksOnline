@@ -187,12 +187,11 @@ if (response.ok):
 
         # Ecriture fichier csv
 
-            with open('./csv/scraping_all_books.csv', 'w') as file:
-                writer = csv.writer(file)
+        with open('./csv/scraping_category.csv', 'w', encoding="utf-8") as file:
+            writer = csv.DictWriter(file,fieldnames = products_informations.keys[0]())
 
-                # En têtes
-                writer.writerow(products_informations[0].keys())
+        # En têtes et les valeurs
+        writer.writeheader()
+        for product_informations in products_informations:
+            writer.writerow(product_informations)
 
-                # Values
-                for product_informations in products_informations:
-                    writer.writerow(product_informations.values())

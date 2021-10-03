@@ -43,7 +43,7 @@ def find_products_url_by_category(url_categ):
     links = []
 
     if response.ok:
-        soup = BeautifulSoup(response.text, 'html.parser')
+        soup = BeautifulSoup(response.content, 'html.parser')
 
         is_pagination = soup.find("ul", {"class": "pager"})
 
@@ -165,10 +165,10 @@ if links:
         products_informations.append(scrappy_product(url))
 
     # Ecriture fichier csv
-    with open('./csv/scraping_category.csv', 'w') as file:
-        writer = csv.writer(file)
+    with open('./csv/scraping_category.csv', 'w', encoding="utf-8") as file:
+        writer = csv.DictWriter(file,fieldnames = products_informations[0].keys())
 
         # En têtes et les valeurs
-        writer.writerow(products_informations[0].keys())
+        writer.writeheader()
         for product_informations in products_informations:
-            writer.writerow(products_informations.values())
+            writer.writerow(product_informations)
