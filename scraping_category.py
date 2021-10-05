@@ -13,9 +13,8 @@ def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='�
         filledLength = int(length * iteration // total)
         bar = fill * filledLength + '-' * (length - filledLength)
         print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=printEnd)
-    # Initial Call
     printProgressBar(0)
-    # Update Progress Bar
+    # Progression de la barre
     for i, item in enumerate(iterable):
         yield item
         printProgressBar(i + 1)
@@ -70,7 +69,7 @@ def find_products_url_by_category(url_categ):
 
     return links
 
-
+# Récupération des information des produits
 def scrappy_product(url):
     product_informations = {
         "product_page_url": url}
@@ -80,7 +79,7 @@ def scrappy_product(url):
     if response.ok:
         soup = BeautifulSoup(response.text, 'html.parser')
 
-# Récupérer universal_product_code / price_excluding_taxe / price_including_tax du tableau d'information produit
+# Récupérer l'universal_product_code / price_excluding_taxe / price_including_tax du tableau d'information produit
         informations = soup.findAll("tr")
 
         for information in informations:
@@ -102,25 +101,25 @@ def scrappy_product(url):
 
                 product_informations[target_dict] = information_value
 
-# Récupéreration image_url (id product_gallery)
+# Récupéreration image_url
         product_gallery = soup.find("div", {"id": "product_gallery"})
         product_informations["image_url"] = "http://books.toscrape.com/" + \
             product_gallery.find('img')["src"]
 
-# Récupéreration category (breadcrumbs : dernier li avant class active)
+# Récupéreration category
         breadcrumb = soup.find('ul', {"class": "breadcrumb"})
         links = breadcrumb.select('li:not(.active)')
         product_informations["category"] = links[len(links) - 1].text.strip()
 
-# Récupéreration title (titre H1)
+# Récupéreration des titles
         product_informations['title'] = soup.find('h1').text
 
-# Récupéreration des descriptions (id product_description + selecteur css frère tag p)
+# Récupéreration des descriptions et du paragraphe
         description = soup.find('div', {"id": 'product_description'})
         product_informations["product_description"] = description.findNext(
             'p').text
 
-# Récupéreration des review_rating (class star-rating + class indiquant le nombre d'étoile)
+# Récupéreration des review_rating
         review_rating = soup.find('p', {"class": "star-rating"})
         if review_rating.has_attr('class'):
             review_rating = review_rating["class"][1]
@@ -142,7 +141,7 @@ def scrappy_product(url):
 
         product_informations['review_rating'] = review_rating
 
-# Récupéreration du number_available (instock / outofstock en dessous du prix du produit)
+# Récupéreration du number_available
         availability = soup.select('p.availability.instock')
 
         if availability:
