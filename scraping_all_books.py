@@ -21,7 +21,7 @@ def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='�
     for i, item in enumerate(iterable):
         yield item
         printProgressBar(i + 1)
-    # Print New Line on Complete
+    # Print de test
     print("Extraction complète")
 
 # Récupération desproduits par catégorie
@@ -33,12 +33,11 @@ def scrappy_products_category(soup):
     for product in products:
         href = product.find('a')["href"]
         href = href.split('/')
-        links.append("http://books.toscrape.com/catalogue/" +
-                     href[-2] + "/" + href[-1])
+        links.append("http://books.toscrape.com/catalogue/" + href[-2] + "/" + href[-1])
 
     return links
 
-# Récupération des produits avecleurs URL
+# Mise en place du parer pour récupérer les données
 def find_products_url_by_category(url_categ):
     # produit par page : 20
     response = requests.get(url_categ)
@@ -50,14 +49,12 @@ def find_products_url_by_category(url_categ):
         is_pagination = soup.find("ul", {"class": "pager"})
 
         if is_pagination:
-            nbPages = is_pagination.find(
-                'li', {"class": "current"}).text.strip()
+            nbPages = is_pagination.find('li', {"class": "current"}).text.strip()
             nbPages = int(nbPages[-1:])
 
             if nbPages:
                 for i in range(1, nbPages + 1):
-                    url = url_categ.replace(
-                        'index.html', 'page-' + str(i) + '.html')
+                    url = url_categ.replace('index.html', 'page-' + str(i) + '.html')
 
                     response = requests.get(url)
 
@@ -70,7 +67,7 @@ def find_products_url_by_category(url_categ):
 
     return links
 
-# Scrapping des produits
+# Mise en place du parser pour récupérer les informations 
 def scrappy_product(url, upload_image, slug_categ):
     product_informations = {
         "product_page_url": url}
@@ -119,8 +116,7 @@ def scrappy_product(url, upload_image, slug_categ):
         description = soup.find('div', {"id": 'product_description'})
 
         if description:
-            product_informations["product_description"] = description.findNext(
-                'p').text
+            product_informations["product_description"] = description.findNext('p').text
 
 # Récupéreration des review_rating (class star-rating + class indiquant le nombre d'étoile)
         review_rating = soup.find('p', {"class": "star-rating"})
@@ -144,7 +140,7 @@ def scrappy_product(url, upload_image, slug_categ):
 
         product_informations['review_rating'] = review_rating
 
-# Récupéreration des number_available
+# Récupéreration des stocks
         availability = soup.select('p.availability.instock')
 
         if availability:
@@ -161,8 +157,7 @@ def scrappy_product(url, upload_image, slug_categ):
         if upload_image and slug_categ:
             title = slugify(product_informations["title"])
             image_url = product_informations["image_url"]
-            image_ext = product_informations["image_url"].split(
-                '.')[-1]
+            image_ext = product_informations["image_url"].split('.')[-1]
 
             urllib.request.urlretrieve(
                 image_url, './scrap/' + slug_categ + '/images/' + title + '.' + image_ext)
@@ -178,8 +173,7 @@ if (response.ok):
 
 # Récupérer toutes les catégories de livres
     for categorie in soup.select('.side_categories ul > li > ul > li > a'):
-        categories.append(
-            {"name": categorie.text.strip(), "url": "http://books.toscrape.com/" + categorie["href"]})
+        categories.append({"name": categorie.text.strip(), "url": "http://books.toscrape.com/" + categorie["href"]})
 
 # Creation du dossier scrap si il n'existe pas
     Path('./scrap/').mkdir(parents=True, exist_ok=True)

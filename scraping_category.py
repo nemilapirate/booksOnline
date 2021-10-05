@@ -6,7 +6,7 @@ import csv
 def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
 
     total = len(iterable)
-# impression de la barre de progression
+# Visu de la barre de progression
     def printProgressBar(iteration):
         percent = ("{0:." + str(decimals) + "f}").format(100 *
                                                          (iteration / float(total)))
@@ -14,11 +14,11 @@ def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='�
         bar = fill * filledLength + '-' * (length - filledLength)
         print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=printEnd)
     printProgressBar(0)
-    # Progression de la barre
+# Progression de la barre
     for i, item in enumerate(iterable):
         yield item
         printProgressBar(i + 1)
-#Test de progression
+#print de progression
 print("Exportation en cour...")
 
 
@@ -31,8 +31,7 @@ def scrappy_products_category(soup):
     for product in products:
         href = product.find('a')["href"]
         href = href.split('/')
-        links.append("http://books.toscrape.com/catalogue/" +
-                     href[-2] + "/" + href[-1])
+        links.append("http://books.toscrape.com/catalogue/" + href[-2] + "/" + href[-1])
 
     return links
 
@@ -54,8 +53,7 @@ def find_products_url_by_category(url_categ):
 
             if nbPages:
                 for i in progressBar(range(1, nbPages + 1), prefix='Scrap Categs:', suffix='Complete', length=50):
-                    url = url_categ.replace(
-                        'index.html', 'page-' + str(i) + '.html')
+                    url = url_categ.replace('index.html', 'page-' + str(i) + '.html')
 
                     response = requests.get(url)
 
@@ -69,10 +67,9 @@ def find_products_url_by_category(url_categ):
 
     return links
 
-# Récupération des information des produits
+# Mise en place du parser pour récupérer les éléments en HTML
 def scrappy_product(url):
-    product_informations = {
-        "product_page_url": url}
+    product_informations = {"product_page_url": url}
 
     response = requests.get(product_informations["product_page_url"])
 
@@ -97,14 +94,14 @@ def scrappy_product(url):
 
             if target_dict:
                 if "Â" in information_value:
-                    information_value = information_value.replace("Â", "")
+                    information_value = information_value.replace("Â" "£", "")
 
                 product_informations[target_dict] = information_value
 
 # Récupéreration image_url
         product_gallery = soup.find("div", {"id": "product_gallery"})
         product_informations["image_url"] = "http://books.toscrape.com/" + \
-            product_gallery.find('img')["src"]
+            product_gallery.find('img')["src"].replace('../../', '')
 
 # Récupéreration category
         breadcrumb = soup.find('ul', {"class": "breadcrumb"})
@@ -141,7 +138,7 @@ def scrappy_product(url):
 
         product_informations['review_rating'] = review_rating
 
-# Récupéreration du number_available
+# Récupéreration du stock
         availability = soup.select('p.availability.instock')
 
         if availability:
