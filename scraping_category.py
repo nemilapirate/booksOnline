@@ -2,11 +2,11 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 
+# Création d'une barre de progression
 def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
 
     total = len(iterable)
 # impression de la barre de progression
-
     def printProgressBar(iteration):
         percent = ("{0:." + str(decimals) + "f}").format(100 *
                                                          (iteration / float(total)))
@@ -19,10 +19,11 @@ def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='�
     for i, item in enumerate(iterable):
         yield item
         printProgressBar(i + 1)
-#Test pour voir si l'exportation est complète 
+#Test de progression
 print("Exportation en cour...")
 
 
+# Récupération des produits par catégorie
 def scrappy_products_category(soup):
     links = []
 
@@ -36,7 +37,7 @@ def scrappy_products_category(soup):
 
     return links
 
-
+# Récupération de tous les éléments de chaque pages
 def find_products_url_by_category(url_categ):
     # produit par page : 20
     response = requests.get(url_categ)
@@ -79,7 +80,7 @@ def scrappy_product(url):
     if response.ok:
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Récupérer universal_product_code / price_excluding_taxe / price_including_tax (tableau d'information en bas de page produit)
+# Récupérer universal_product_code / price_excluding_taxe / price_including_tax du tableau d'information produit
         informations = soup.findAll("tr")
 
         for information in informations:
@@ -101,25 +102,25 @@ def scrappy_product(url):
 
                 product_informations[target_dict] = information_value
 
-# Récupérer image_url (id product_gallery)
+# Récupéreration image_url (id product_gallery)
         product_gallery = soup.find("div", {"id": "product_gallery"})
         product_informations["image_url"] = "http://books.toscrape.com/" + \
             product_gallery.find('img')["src"]
 
-        # Récupérer category (breadcrumbs : dernier li avant class active)
+# Récupéreration category (breadcrumbs : dernier li avant class active)
         breadcrumb = soup.find('ul', {"class": "breadcrumb"})
         links = breadcrumb.select('li:not(.active)')
         product_informations["category"] = links[len(links) - 1].text.strip()
 
-        # Récupérer title (titre H1)
+# Récupéreration title (titre H1)
         product_informations['title'] = soup.find('h1').text
 
-        # Récupérer description (id product_description + selecteur css frère tag p)
+# Récupéreration des descriptions (id product_description + selecteur css frère tag p)
         description = soup.find('div', {"id": 'product_description'})
         product_informations["product_description"] = description.findNext(
             'p').text
 
-        # Récupérer review_rating (class star-rating + class indiquant le nombre d'étoile)
+# Récupéreration des review_rating (class star-rating + class indiquant le nombre d'étoile)
         review_rating = soup.find('p', {"class": "star-rating"})
         if review_rating.has_attr('class'):
             review_rating = review_rating["class"][1]
@@ -141,7 +142,7 @@ def scrappy_product(url):
 
         product_informations['review_rating'] = review_rating
 
-        # Récupérer number_available (instock outofstock en dessous du prix du produit)
+# Récupéreration du number_available (instock / outofstock en dessous du prix du produit)
         availability = soup.select('p.availability.instock')
 
         if availability:
@@ -164,11 +165,11 @@ if links:
     for url in progressBar(links, prefix='Scrap Products:', suffix='Complete', length=50):
         products_informations.append(scrappy_product(url))
 
-    # Ecriture fichier csv
+# Ecriture fichier csv
     with open('./csv/scraping_category.csv', 'w', encoding="utf-8") as file:
         writer = csv.DictWriter(file,fieldnames = products_informations[0].keys())
 
-        # En têtes et les valeurs
+# En têtes et les valeurs
         writer.writeheader()
         for product_informations in products_informations:
             writer.writerow(product_informations)
