@@ -1,10 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 from pathlib import Path
-import csv
 from slugify import slugify
 import urllib.request
-
+import csv
 
 def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
 
@@ -37,9 +36,9 @@ def scrappy_products_category(soup):
 
     return links
 
-# Mise en place du parer pour récupérer les données
+# Mise en place du parser pour récupérer les données
 def find_products_url_by_category(url_categ):
-    # produit par page : 20
+    # produit par page
     response = requests.get(url_categ)
     links = []
 
@@ -86,16 +85,16 @@ def scrappy_product(url, upload_image, slug_categ):
 
             target_dict = False
 
-            if (information_label == "UPC"):
+            if information_label == "UPC":
                 target_dict = "universal_product_code"
-            elif (information_label == "Price (excl. tax)"):
+            elif information_label == "Price (excl. tax)":
                 target_dict = "price_excluding_tax"
-            elif (information_label == "Price (incl. tax)"):
+            elif information_label == "Price (incl. tax)":
                 target_dict = "price_including_tax"
 
             if target_dict:
                 if "Â" in information_value:
-                    information_value = information_value.replace("Â", "")
+                    information_value = information_value.replace("Â" "£", "")
 
                 product_informations[target_dict] = information_value
 
@@ -160,7 +159,7 @@ def scrappy_product(url, upload_image, slug_categ):
             image_ext = product_informations["image_url"].split('.')[-1]
 
             urllib.request.urlretrieve(
-                image_url, './scrap/' + slug_categ + '/images/' + title + '.' + image_ext)
+                image_url, './images/' + slug_categ + '/images/' + title + '.' + image_ext)
 
     return product_informations
 
@@ -176,17 +175,17 @@ if (response.ok):
         categories.append({"name": categorie.text.strip(), "url": "http://books.toscrape.com/" + categorie["href"]})
 
 # Creation du dossier scrap si il n'existe pas
-    Path('./scrap/').mkdir(parents=True, exist_ok=True)
+    Path('./images/').mkdir(parents=True, exist_ok=True)
 
 # Consulter la page de chaque catégories
     for categorie in progressBar(categories, prefix='Scrapping Books...:', suffix='', length=50):
         name = slugify(categorie["name"])
 
 # creation des dossiers par catégorie
-        Path('./scrap/' + name).mkdir(parents=True, exist_ok=True)
+        Path('./images/' + name).mkdir(parents=True, exist_ok=True)
 
 # creation du dossier image en dehors du dossier d'information
-        Path('./scrap/' + name + '/images').mkdir(parents=True, exist_ok=True)
+        Path('./images/' + name + '/images').mkdir(parents=True, exist_ok=True)
 
         print("Catégorie : " + categorie["name"])
         links = find_products_url_by_category(categorie["url"])
@@ -201,14 +200,11 @@ if (response.ok):
             print(str(i) + " extraction sur " + str(len(links)) + " produits")
             i += 1
 
-# # Ecriture fichier csv
-    
-#         with open('./csv/scraping_all_books.csv', 'w', encoding="utf-8") as file:
-#             writer = csv.DictWriter(file,fieldnames = products_informations.keys[0]())
+        # Ecriture fichier csv
+        with open('./csv/'+ categorie["name"]+ '.csv', 'w', encoding="utf-8") as file:
+            writer = csv.DictWriter(file,fieldnames = products_informations[0].keys())
 
-# # En têtes et les valeurs
-#         writer.writeheader()
-#         for product_informations in products_informations:
-#             writer.writerow(product_informations)
-
-
+            # En têtes et les valeurs
+            writer.writeheader()
+            for product_informations in products_informations:
+                    writer.writerow(product_informations)
