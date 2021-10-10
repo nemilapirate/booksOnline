@@ -9,7 +9,7 @@ response = requests.get(product_information["product_page_url"])
 if response.ok:
     soup = bs(response.text, 'html.parser')
 
-# Récupérer universal_product_code / price_excluding_taxe / price_including_tax (tableau d'information en bas de page produit)
+# Récupéreration de l'universal_product_code / price_excluding_taxe / price_including_tax
 informations = soup.findAll("tr")
 
 for information in informations:
@@ -31,24 +31,24 @@ for information in informations:
 
             product_information[target_dict] = information_value
 
-    # Récupéreration de image_url
+# Récupéreration de image_url
 product_gallery = soup.find("div", {"id": "product_gallery"})
 product_information["image_url"] = "http://books.toscrape.com/" + \
 product_gallery.find('img')["src"].replace('../../', '')
 
-    # Récupéreration de la categorie
+# Récupéreration de la categorie
 breadcrumb = soup.find('ul', {"class": "breadcrumb"})
 links = breadcrumb.select('li:not(.active)')
 product_information["category"] = links[len(links) - 1].text.strip()
 
-    # Récupéreration du titre
+# Récupéreration du titre
 product_information['title'] = soup.find('h1').text
 
-    # Récupéreration de la description et du paragraphe
+# Récupéreration de la description et du paragraphe
 description = soup.find('div', {"id": 'product_description'})
 product_information["product_description"] = description.findNext('p').text
 
-    # Récupéreration de la review_rating 
+# Récupéreration de la review_rating 
 review_rating = soup.find('p', {"class": "star-rating"})
 if review_rating.has_attr('class'):
     review_rating = review_rating["class"][1]

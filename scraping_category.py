@@ -22,7 +22,7 @@ def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='�
 print("Exportation en cour...")
 
 
-# Récupération des produits par catégorie
+# Récupération de la catégorie des produits
 def scrappy_products_category(soup):
     links = []
 
@@ -59,10 +59,11 @@ def find_products_url_by_category(url_categ):
 
                     if (response.ok):
                         soup = BeautifulSoup(response.text, 'html.parser')
-
+# 
                         links += scrappy_products_category(soup)
             else:
                 print("scrapping of category url : " + url_categ)
+                # 
                 links = scrappy_products_category(soup)
 
     return links
@@ -76,7 +77,7 @@ def scrappy_product(url):
     if response.ok:
         soup = BeautifulSoup(response.text, 'html.parser')
 
-# Récupérer l'universal_product_code / price_excluding_taxe / price_including_tax du tableau d'information produit
+# Récupéreration de l'universal_product_code / price_excluding_taxe / price_including_tax du tableau d'information
         informations = soup.findAll("tr")
 
         for information in informations:
@@ -133,8 +134,6 @@ def scrappy_product(url):
                 review_rating = 5
             else:
                 review_rating = 0
-        else:
-            review_rating = 0
 
         product_informations['review_rating'] = review_rating
 
