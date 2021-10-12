@@ -82,7 +82,7 @@ if review_rating.has_attr('class'):
         product_information["number_available"] = 0
 
 # Ecriture fichier csv
-with open('./csv/scraping.one.csv', 'w') as file:
+with open('scraping.one.csv', 'w') as file:
     writer = csv.writer(file)
 
     # En têtes

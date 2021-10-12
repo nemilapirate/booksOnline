@@ -1,5 +1,5 @@
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup as bs
 from pathlib import Path
 from slugify import slugify
 import urllib.request
@@ -43,7 +43,7 @@ def find_products_url_by_category(url_categ):
     links = []
 
     if response.ok:
-        soup = BeautifulSoup(response.text, 'html.parser')
+        soup = bs(response.text, 'html.parser')
 
         is_pagination = soup.find("ul", {"class": "pager"})
 
@@ -57,8 +57,8 @@ def find_products_url_by_category(url_categ):
 
                     response = requests.get(url)
 
-                    if (response.ok):
-                        soup = BeautifulSoup(response.text, 'html.parser')
+                    if response.ok:
+                        soup = bs(response.text, 'html.parser')
 
                         links += scrappy_products_category(soup)
         else:
@@ -74,9 +74,9 @@ def scrappy_product(url, upload_image, slug_categ):
     response = requests.get(product_informations["product_page_url"])
 
     if response.ok:
-        soup = BeautifulSoup(response.text, 'html.parser')
+        soup = bs(response.text, 'html.parser')
 
-# Récupéreration des universal_product_code / price_excluding_taxe / price_including_tax (tableau d'information)
+        # Récupéreration des universal_product_code / price_excluding_taxe / price_including_tax (tableau d'information)
         informations = soup.findAll("tr")
 
         for information in informations:
@@ -98,26 +98,26 @@ def scrappy_product(url, upload_image, slug_categ):
 
                 product_informations[target_dict] = information_value
 
-# Récupéreration de l'image_url (id product_gallery)
+        # Récupéreration de l'image_url (id product_gallery)
         product_gallery = soup.find("div", {"id": "product_gallery"})
         product_informations["image_url"] = "http://books.toscrape.com/" + \
             product_gallery.find('img')["src"].replace('../../', '')
 
-# Récupéreration des catégories 
+        # Récupéreration des catégories 
         breadcrumb = soup.find('ul', {"class": "breadcrumb"})
         links = breadcrumb.select('li:not(.active)')
         product_informations["category"] = links[len(links) - 1].text.strip()
 
-# Récupéreration des titles 
+        # Récupéreration des titles 
         product_informations['title'] = soup.find('h1').text
 
-# Récupéreration des descriptions 
+        # Récupéreration des descriptions 
         description = soup.find('div', {"id": 'product_description'})
 
         if description:
             product_informations["product_description"] = description.findNext('p').text
 
-# Récupéreration des review_rating 
+        # Récupéreration des review_rating 
         review_rating = soup.find('p', {"class": "star-rating"})
         if review_rating.has_attr('class'):
             review_rating = review_rating["class"][1]
@@ -139,7 +139,7 @@ def scrappy_product(url, upload_image, slug_categ):
 
         product_informations['review_rating'] = review_rating
 
-# Récupéreration des stocks
+        # Récupéreration des stocks
         availability = soup.select('p.availability.instock')
 
         if availability:
@@ -152,7 +152,7 @@ def scrappy_product(url, upload_image, slug_categ):
         else:
             product_informations["number_available"] = 0
 
- # téléchargement des images dans un autre dossier
+        # téléchargement des images dans un autre dossier
         if upload_image and slug_categ:
             title = slugify(product_informations["title"])
             image_url = product_informations["image_url"]
@@ -168,23 +168,23 @@ categories = []
 response = requests.get('http://books.toscrape.com/')
 
 if (response.ok):
-    soup = BeautifulSoup(response.text, 'html.parser')
+    soup = bs(response.text, 'html.parser')
 
-# Récupérer toutes les catégories de livres
+    # Récupérer toutes les catégories de livres
     for categorie in soup.select('.side_categories ul > li > ul > li > a'):
         categories.append({"name": categorie.text.strip(), "url": "http://books.toscrape.com/" + categorie["href"]})
 
-# Creation du dossier images si il n'existe pas
+    # Creation du dossier images si il n'existe pas
     Path('./images/').mkdir(parents=True, exist_ok=True)
 
-# Consulter la page de chaque catégories
+    # Consulter la page de chaque catégories
     for categorie in progressBar(categories, prefix='Scrapping Books...:', suffix='', length=50):
         name = slugify(categorie["name"])
 
-# creation des dossiers par catégorie
+        # creation d'un répertoire images
         Path('./images/' + name).mkdir(parents=True, exist_ok=True)
 
-# creation du dossier image en dehors du dossier d'information
+        # creation de plusieurs répetoire par nom de catégorie
         Path('./images/' + name + '/images').mkdir(parents=True, exist_ok=True)
 
         print("Catégorie : " + categorie["name"])
@@ -200,11 +200,13 @@ if (response.ok):
             print(str(i) + " extraction sur " + str(len(links)) + " produits")
             i += 1
 
-        # Ecriture fichier csv
-        with open('./csv/'+ categorie["name"]+ '.csv', 'w', encoding="utf-8") as file:
-            writer = csv.DictWriter(file,fieldnames = products_informations[0].keys())
+            #Création du répertoire CSV
+            Path('./csv/').mkdir(parents=True, exist_ok=True)
+            # Ecriture fichier csv
+            with open('./csv/' + categorie["name"]+ '.csv', 'w', encoding="utf-8") as file:
+                writer = csv.DictWriter(file,fieldnames = products_informations[0].keys())
 
-            # En têtes et les valeurs
-            writer.writeheader()
-            for product_informations in products_informations:
-                    writer.writerow(product_informations)
+                # En têtes et les valeurs
+                writer.writeheader()
+                for product_informations in products_informations:
+                        writer.writerow(product_informations)

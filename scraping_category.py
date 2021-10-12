@@ -1,5 +1,5 @@
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup as bs
 import csv
 
 # Création d'une barre de progression
@@ -42,7 +42,7 @@ def find_products_url_by_category(url_categ):
     links = []
 
     if response.ok:
-        soup = BeautifulSoup(response.content, 'html.parser')
+        soup = bs(response.content, 'html.parser')
 
         is_pagination = soup.find("ul", {"class": "pager"})
 
@@ -58,8 +58,8 @@ def find_products_url_by_category(url_categ):
                     response = requests.get(url)
 
                     if (response.ok):
-                        soup = BeautifulSoup(response.text, 'html.parser')
-# 
+                        soup = bs(response.text, 'html.parser')
+ 
                         links += scrappy_products_category(soup)
             else:
                 print("scrapping of category url : " + url_categ)
@@ -75,9 +75,9 @@ def scrappy_product(url):
     response = requests.get(product_informations["product_page_url"])
 
     if response.ok:
-        soup = BeautifulSoup(response.text, 'html.parser')
+        soup = bs(response.text, 'html.parser')
 
-# Récupéreration de l'universal_product_code / price_excluding_taxe / price_including_tax du tableau d'information
+        # Récupéreration de l'universal_product_code / price_excluding_taxe / price_including_tax du tableau d'information
         informations = soup.findAll("tr")
 
         for information in informations:
@@ -99,25 +99,25 @@ def scrappy_product(url):
 
                 product_informations[target_dict] = information_value
 
-# Récupéreration image_url
+        # Récupéreration image_url
         product_gallery = soup.find("div", {"id": "product_gallery"})
         product_informations["image_url"] = "http://books.toscrape.com/" + \
             product_gallery.find('img')["src"].replace('../../', '')
 
-# Récupéreration category
+        # Récupéreration category
         breadcrumb = soup.find('ul', {"class": "breadcrumb"})
         links = breadcrumb.select('li:not(.active)')
         product_informations["category"] = links[len(links) - 1].text.strip()
 
-# Récupéreration des titles
+        # Récupéreration des titles
         product_informations['title'] = soup.find('h1').text
 
-# Récupéreration des descriptions et du paragraphe
+        # Récupéreration des descriptions et du paragraphe
         description = soup.find('div', {"id": 'product_description'})
         product_informations["product_description"] = description.findNext(
             'p').text
 
-# Récupéreration des review_rating
+        # Récupéreration des review_rating
         review_rating = soup.find('p', {"class": "star-rating"})
         if review_rating.has_attr('class'):
             review_rating = review_rating["class"][1]
@@ -137,7 +137,7 @@ def scrappy_product(url):
 
         product_informations['review_rating'] = review_rating
 
-# Récupéreration du stock
+        # Récupéreration du stock
         availability = soup.select('p.availability.instock')
 
         if availability:
@@ -160,11 +160,11 @@ if links:
     for url in progressBar(links, prefix='Scrap Products:', suffix='Complete', length=50):
         products_informations.append(scrappy_product(url))
 
-# Ecriture fichier csv
-    with open('./csv/scraping_category.csv', 'w', encoding="utf-8") as file:
+    # Ecriture fichier csv
+    with open('scraping_category.csv', 'w', encoding="utf-8") as file:
         writer = csv.DictWriter(file,fieldnames = products_informations[0].keys())
 
-# En têtes et les valeurs
+        # En têtes et les valeurs
         writer.writeheader()
         for product_informations in products_informations:
             writer.writerow(product_informations)
