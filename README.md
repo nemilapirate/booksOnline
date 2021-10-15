@@ -65,9 +65,14 @@ Pour installer la dernière version de Python :
  
  ---------------------------------------
 
-Pour l'environnement virtuel : 
+Pour l'environnement virtuel et installer les dépendances: 
 
-      pip install -r requirements.txt
+      pip install -r requirements.txt 
+      
+
+Pour ouvrir l'environnement : 
+
+      cd booksOnline/env/Scripts/activate
 
 ----------------------------------------
 
